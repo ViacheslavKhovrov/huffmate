@@ -53,6 +53,7 @@ contract ERC20Test is Test {
 
         // Deploy the Mintable ERC20
         address mintableTokenAddress = HuffDeployer.config()
+            .with_evm_version("shanghai")
             .with_code(mintable_wrapper)
             .with_deployer(deployer)
             .with_args(bytes.concat(abi.encode("Token"), abi.encode("TKN"), abi.encode(DECIMALS)))
@@ -319,6 +320,16 @@ contract ERC20Test is Test {
             assertEq(token.balanceOf(from), 0);
             assertEq(token.balanceOf(to), amount);
         }
+    }
+
+    function testFailMintTotalSupplyOverflow(
+        address to,
+        uint256 mintAmount
+    ) public {
+        mintAmount = bound(mintAmount, 1, type(uint256).max);
+
+        token.mint(to, type(uint256).max);
+        token.mint(to, mintAmount);
     }
 
     function testFailBurnInsufficientBalance(
